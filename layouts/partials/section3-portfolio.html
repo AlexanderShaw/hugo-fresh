@@ -1,0 +1,96 @@
+<style>
+  #image-track {
+    display: flex;
+    gap: 40px;
+    width: max-content;
+    user-select: none;
+  }
+  
+  #image-track > .image {
+    height: 600px;
+    object-fit: cover;
+    object-position: 100% center;
+  }
+</style>
+
+<div id="image-track" data-mouse-down-at="0" data-prev-x="0">  
+    {{ range $index, $image := .Site.Params.section3.portfolio }}
+    <img class="image" src="images/{{ $image.image }}" alt="{{ $image.title }}" draggable="false">
+    {{ end }}
+  </div>
+<script>
+var track = document.getElementById("image-track");
+
+track.dataset.x = 0;
+
+const numberImages = track.children.length;
+
+const images = Array.from(track.children);
+imageWidths = images.map(image => image.width);
+// compute the centers by adding 40px between each image
+// the images are arbitrary width
+var imageCenters = [];
+var start = - imageWidths[0] / 2;
+imageWidths.forEach(element => {
+    imageCenters.push(start + element / 2);
+    start += 40 + element;
+});
+
+const handleOnDown = e => track.dataset.mouseDownAt = e.clientX;
+
+const handleOnUp = () => {
+  track.dataset.mouseDownAt = "0";  
+  track.dataset.prevX = track.dataset.x
+  // figure out which image is the closest to the center of the viewport
+  // and snap to it
+    var closestImage = Math.round(- track.dataset.x / track.clientWidth * numberImages);
+
+    closestImage = Math.max(0, Math.min(numberImages - 1, closestImage));
+
+    // find the center of the image
+    var snapTo = - imageCenters[closestImage];
+
+    track.dataset.x = snapTo;
+    track.dataset.prevX = snapTo;
+    track.animate({
+      transform: `translate(${snapTo}px, 0%)`
+    }, { duration: 600, fill: "forwards" });
+
+    
+
+}
+
+const handleOnMove = e => {
+  if(track.dataset.mouseDownAt === "0") return;
+
+  if (track.dataset.x < -track.clientWidth  + window.innerWidth) {
+    track.dataset.x = -track.clientWidth + window.innerWidth;
+    return;
+  } else if (track.dataset.x > 0) {
+    track.dataset.x = 0;
+    return;
+  }
+  
+  const mouseDelta = 2.5* (parseFloat(track.dataset.mouseDownAt) - e.clientX );
+
+  track.dataset.x = track.dataset.prevX - mouseDelta;
+  
+  track.animate({
+    transform: `translate(${track.dataset.prevX - mouseDelta}px, 0%)`
+  }, { duration: 1200, fill: "forwards" });
+}
+
+/* -- Had to add extra lines for touch events -- */
+
+window.onmousedown = e => handleOnDown(e);
+
+window.ontouchstart = e => handleOnDown(e.touches[0]);
+
+window.onmouseup = e => handleOnUp(e);
+
+window.ontouchend = e => handleOnUp(e.touches[0]);
+
+window.onmousemove = e => handleOnMove(e);
+
+window.ontouchmove = e => handleOnMove(e.touches[0]);
+</script>

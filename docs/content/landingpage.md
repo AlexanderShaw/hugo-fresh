@@ -41,7 +41,7 @@ Set the font of the site.
 
 ```yaml
 font:
-  name: "Open Sans"
+  name: "Afacad Flux"
   sizes: [400,600]
 ```
 

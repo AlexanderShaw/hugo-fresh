@@ -4,15 +4,20 @@
 {{- $buttonText := index $hero "buttontext" }}
 {{- $buttonLink := index $hero "buttonlink" }}
 {{- $image      := index $hero "image" }}
-<div class="hero-body">
+
+<div class="hero-background">
+  {{ partial "hero-background.html" . }}
+</div>
+<div class="hero-body hero-no-pointer">
+
   <div class="container">
     <div class="columns is-vcentered">
-      <div class="column is-5 is-offset-1 landing-caption">
-        <h1 class="title is-1 is-bold is-spaced">
+      <div class="column is-5 is-offset-1 landing-caption hero-text hero-pointer hero-outline">
+        <h1 class="title is-1 is-bold is-spaced ">
           {{ $title }}
         </h1>
         {{ with $subtitle }}
-        <h2 class="subtitle is-5 is-muted">
+        <h2 class="subtitle is-5 is-muted hero-no-pointer">
           {{ . }}
         </h2>
         {{ end }}
@@ -23,8 +28,8 @@
         </p>
       </div>
       <div class="column is-5 is-offset-1">
-        <figure class="image is-4by3">
-          <img src="{{ printf "images/%s" $image | relURL }}" alt="Description">
+        <figure class="image">
+          
         </figure>
       </div>
     </div>
