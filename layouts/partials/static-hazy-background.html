@@ -24,13 +24,13 @@ const colorMap = {
 };
 
 const distanceMap = {
-    main: 150,
+    main: 300,
     primary: 20,
     secondary: 20
 };
 
 const radiusMap = {
-    main: 50,
+    main: 1,
     primary: 15,
     secondary: 5
 };
@@ -42,8 +42,7 @@ const color = d3.scaleOrdinal(d3.schemeCategory10);
 const svg = d3.create("svg")
     .attr("width", width)
     .attr("height", height)
-    .attr("viewBox", [-width / 2, -height / 2, width, height])
-    .attr("style", "max-width: 100%; height: auto;");
+    .attr("viewBox", [-width / 2, -height / 3, width, height]);
 
 // create a random number generator with uniform distribution
 // between 0 and 100
@@ -51,7 +50,7 @@ const svg = d3.create("svg")
 const seed = 0.32132;
 const rng = d3.randomUniform.source(d3.randomLcg(seed))(0, 1000);
 
-const mainNode = [width, width, "main"];
+const mainNode = [0, 0, "main"];
 
 // create 10 points in a circle around the main node
 const primaryNodes = d3.range(12).map(i => {
@@ -80,13 +79,13 @@ nodes.push(mainNode);
 links.push(...mainNodeLinks);
 
 function spinForce(alpha) {
-  for (let i = 0, n = nodes.length, node, distx, disty, k = 0.1; i < n-1; ++i) {
-    node = nodes[i];
-    distx = node.x - nodes[n-1].x;
-    disty = node.y - nodes[n-1].y;
-    node.x = 1 / distx * k;
-    node.y = 1 / disty * k;
-  }
+    for (let i = 0, n = nodes.length, node, distx, disty, k = alpha * 0.1; i < n-1; ++i) {
+        node = nodes[i];
+        distx = node.x - nodes[n-1].x;
+        disty = node.y - nodes[n-1].y;
+        node.vx += disty * k;
+        node.vy -= distx * k;
+    }
 }
 
 // Create a simulation with several forces.
@@ -95,15 +94,8 @@ const simulation = d3.forceSimulation(nodes)
     .force("charge", d3.forceManyBody().strength(-300))
     .force("x", d3.forceX())
     .force("y", d3.forceY())
-    // .force("spin", spinForce)
+    // .force("spin", spinForce(0.1));
 
-// add restoring force to the main node to root location
-// if the window width is less than 600, change change root location to be in the center top
-if (width < 600) {
-    simulation.force("mainNode", d3.forceRadial(200, 0, -height / 3).strength(0.05).radius(d => d[2] === "main" ? 0 : 0));
-} else {
-    simulation.force("mainNode", d3.forceRadial(200, width/2, -height/8).strength(0.05).radius(d => d[2] === "main" ? 0 : 0));
-}
 // Add a line for each link, and a circle for each node.
 const link = svg.append("g")
     .attr("stroke", colorMap.secondary)
@@ -130,63 +122,37 @@ node.append("circle")
     .attr("stroke-width", 1)
     .attr("stroke-opacity", 0.5);
 
-node.filter(d => d[2] === "main")
-    .append("image")
-    .attr("xlink:href", "/images/favicon.svg")
-    .attr("x", -30)
-    .attr("y", -30)
-    .attr("width", 60)
-    .attr("height", 60);
-
-// Add a drag behavior.
-node.call(d3.drag()
-    .on("start", dragstarted)
-    .on("drag", dragged)
-    .on("end", dragended));
+// node.filter(d => d[2] === "main")
+//     .append("image")
+//     .attr("xlink:href", "/images/favicon.svg")
+//     .attr("x", -30)
+//     .attr("y", -30)
+//     .attr("width", 60)
+//     .attr("height", 60);
 
 // Set the position attributes of links and nodes each time the simulation ticks.
 simulation.on("tick", () => {
-link
-    .attr("x1", d => d.source.x)
-    .attr("y1", d => d.source.y)
-    .attr("x2", d => d.target.x)
-    .attr("y2", d => d.target.y);
+    link
+        .attr("x1", d => d.source.x)
+        .attr("y1", d => d.source.y)
+        .attr("x2", d => d.target.x)
+        .attr("y2", d => d.target.y);
 
-node
-    .attr("transform", d => `translate(${d.x}, ${d.y})`);
+    node
+        .attr("transform", d => `translate(${d.x}, ${d.y})`);
 });
 
-// Reheat the simulation when drag starts, and fix the subject position.
-function dragstarted(event) {
-if (!event.active) simulation.alphaTarget(0.3).restart();
-event.subject.fx = event.subject.x;
-event.subject.fy = event.subject.y;
-}
-
-// Update the subject (dragged node) position during drag.
-function dragged(event) {
-event.subject.fx = event.x;
-event.subject.fy = event.y;
-}
-// Restore the target alpha so the simulation cools after dragging ends.
-// Unfix the subject position now that it’s no longer being dragged.
-function dragended(event) {
-if (!event.active) simulation.alphaTarget(0);
-event.subject.fx = null;
-event.subject.fy = null;
-}
 
 
 // Append the SVG element.
 container.append(svg.node());
-
 // change the size of the svg element when the window is resized
 window.addEventListener("resize", () => {
 width = $(window).width();
 height = $(window).height();
 svg.attr("width", width)
     .attr("height", height)
-    .attr("viewBox", [-width / 2, -height / 2, width, height]);
+    .attr("viewBox", [-width / 2, -height / 3, width, height]);
 
 
 });

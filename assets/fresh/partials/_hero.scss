@@ -46,6 +46,20 @@ Hero styles
     background-color: $white;
 }
 
+.hero-background-non-interactive {
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 100%;
+    height: 100%;
+    // transform: translate(50%, -50%);
+    background-color: $white;
+    pointer-events: none;
+    filter: blur(5px); // Adding a blur effect for a hazy look
+    opacity: 0.2; // Slightly reducing opacity for a more pronounced hazy effect
+    overflow: show;
+}
+
 .hero-no-pointer {
     pointer-events: none;
 }

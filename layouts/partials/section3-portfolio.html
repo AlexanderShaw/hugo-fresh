@@ -1,40 +1,48 @@
 <style>
+  #track-container {
+    width: 100%;
+    overflow-x: scroll;
+    position: relative;
+  }
+
   #image-track {
     display: flex;
-    gap: 40px;
     width: max-content;
     user-select: none;
+    align-items: baseline;
   }
   
   #image-track > .image {
     height: 600px;
+    margin-top: auto;
+    margin-left: 20px;
+    margin-right: 20px;
+    margin-bottom: auto;
     object-fit: cover;
-    object-position: 100% center;
+    border-radius: 10px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
   }
 </style>
 
-<div id="image-track" data-mouse-down-at="0" data-prev-x="0">  
+<div id="track-container">
+<div id="image-track" data-mouse-down-at="0" data-prev-x="0">
     {{ range $index, $image := .Site.Params.section3.portfolio }}
-    <img class="image" src="images/{{ $image.image }}" alt="{{ $image.title }}" draggable="false">
+    <img class="image" src="/images/{{ $image.image }}" alt="{{ $image.title }}" draggable="false">
     {{ end }}
   </div>
-<script>
+</div>
+<!-- <script>
 var track = document.getElementById("image-track");
 
 track.dataset.x = 0;
 
 const numberImages = track.children.length;
 
-const images = Array.from(track.children);
-imageWidths = images.map(image => image.width);
-// compute the centers by adding 40px between each image
-// the images are arbitrary width
-var imageCenters = [];
-var start = - imageWidths[0] / 2;
-imageWidths.forEach(element => {
-    imageCenters.push(start + element / 2);
-    start += 40 + element;
+const imageCenters = Array.from(track.children).map((image, index) => {
+  return (image.clientWidth + 40) * (index - 1);
 });
+
+imageCenters.push((track.children[numberImages - 1].clientWidth + 40) * (numberImages - 1));
 
 const handleOnDown = e => track.dataset.mouseDownAt = e.clientX;
 
@@ -43,9 +51,78 @@ const handleOnUp = () => {
   track.dataset.prevX = track.dataset.x
   // figure out which image is the closest to the center of the viewport
   // and snap to it
-    var closestImage = Math.round(- track.dataset.x / track.clientWidth * numberImages);
+    // var centerDistances = imageCenters.map(center => Math.abs(center - Math.abs(parseInt(track.dataset.x))));
+    // var closestImage = centerDistances.indexOf(Math.min(...centerDistances));
 
-    closestImage = Math.max(0, Math.min(numberImages - 1, closestImage));
+    // // find the center of the image
+    // var snapTo = - imageCenters[closestImage];
+
+    // console.log(snapTo);
+
+    // track.dataset.x = snapTo;
+    // track.dataset.prevX = snapTo;
+    // track.animate({
+    //   transform: `translate(${snapTo}px, 0%)`
+    // }, { duration: 600, fill: "forwards" });
+
+    
+
+}
+
+const handleOnMove = e => {
+  if(track.dataset.mouseDownAt === "0") return;
+  const mouseDelta = 2.5 * (parseFloat(track.dataset.mouseDownAt) - e.clientX );
+  console.log(parseFloat(track.dataset.x) + track.clientWidth);
+
+  if (parseFloat(track.dataset.x) + track.clientWidth <= 300 && mouseDelta > 0) {
+    track.dataset.x = -track.clientWidth + 300;
+    return;
+  } else if (parseFloat(track.dataset.x) >= 0 && mouseDelta < 0) {
+    track.dataset.x = 0;
+    return;
+  } 
+
+
+  
+
+
+  track.dataset.x = track.dataset.prevX - mouseDelta;
+
+  
+
+  
+  track.animate({
+    transform: `translate(${track.dataset.prevX - mouseDelta}px, 0%)`
+  }, { duration: 1200, fill: "forwards" });
+}
+
+const handleOnScroll = e => {
+    // prevent scroll on the window
+    e.preventDefault();
+  if (track.dataset.x < -track.clientWidth  + window.innerWidth) {
+    track.dataset.x = -track.clientWidth + window.innerWidth;
+    return;
+  } else if (track.dataset.x > 0) {
+    track.dataset.x = 0;
+    track.dataset.prevX = 0;
+    return;
+  }
+  
+  const scrollDelta = e.del
+
+  track.dataset.x = track.dataset.prevX - scrollDelta;
+  
+  track.animate({
+    transform: `translate(${track.dataset.prevX - scrollDelta}px, 0%)`
+  }, { duration: 1200, fill: "forwards" });
+
+}
+
+const handleOnScrollEnd = e => {
+  // figure out which image is the closest to the center of the viewport
+  // and snap to it
+    var centerDistances = imageCenters.map(center => Math.abs(center - Math.abs(parseInt(track.dataset.x))));
+    var closestImage = centerDistances.indexOf(Math.min(...centerDistances));
 
     // find the center of the image
     var snapTo = - imageCenters[closestImage];
@@ -56,41 +133,32 @@ const handleOnUp = () => {
       transform: `translate(${snapTo}px, 0%)`
     }, { duration: 600, fill: "forwards" });
 
-    
 
-}
 
-const handleOnMove = e => {
-  if(track.dataset.mouseDownAt === "0") return;
-
-  if (track.dataset.x < -track.clientWidth  + window.innerWidth) {
-    track.dataset.x = -track.clientWidth + window.innerWidth;
-    return;
-  } else if (track.dataset.x > 0) {
-    track.dataset.x = 0;
-    return;
-  }
-  
-  const mouseDelta = 2.5* (parseFloat(track.dataset.mouseDownAt) - e.clientX );
-
-  track.dataset.x = track.dataset.prevX - mouseDelta;
-  
-  track.animate({
-    transform: `translate(${track.dataset.prevX - mouseDelta}px, 0%)`
-  }, { duration: 1200, fill: "forwards" });
 }
 
 /* -- Had to add extra lines for touch events -- */
 
-window.onmousedown = e => handleOnDown(e);
+// add event listeners to track
 
-window.ontouchstart = e => handleOnDown(e.touches[0]);
-
+track.onmousedown = e => handleOnDown(e);
+track.ontouchstart = e => handleOnDown(e.touches[0]);
 window.onmouseup = e => handleOnUp(e);
+track.ontouchend = e => handleOnUp(e.touches[0]);
+track.onmousemove = e => handleOnMove(e);
+track.ontouchmove = e => handleOnMove(e.touches[0]);
+// track.onwheel = e => handleOnScroll(e);
 
-window.ontouchend = e => handleOnUp(e.touches[0]);
+$('.image').css('width', $('#track-container').width());
+// window.onmousedown = e => handleOnDown(e);
 
-window.onmousemove = e => handleOnMove(e);
+// window.ontouchstart = e => handleOnDown(e.touches[0]);
 
-window.ontouchmove = e => handleOnMove(e.touches[0]);
-</script>
+// window.onmouseup = e => handleOnUp(e);
+
+// window.ontouchend = e => handleOnUp(e.touches[0]);
+
+// window.onmousemove = e => handleOnMove(e);
+
+// window.ontouchmove = e => handleOnMove(e.touches[0]);
+</script> -->

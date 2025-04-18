@@ -2,10 +2,30 @@
 <html lang="{{ .Site.LanguageCode }}">
   <head>
     {{ partial "meta.html" . }}
-    <title>{{ block "title" . }}{{ .Site.Title }}{{ end }}</title>
+    <title>
+      {{ if .Params.landing_page }}
+      {{ .Params.title }}
+      {{ else }}
+      {{ block "title" . }}{{ .Site.Title }}{{ end }}
+      {{ end }}
+    </title>
     {{ partial "css.html" . }}
   </head>
   <body>
+  <script src="/js/d3.min.js"></script>
+  <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+  <!-- Cookie Consent by TermsFeed https://www.TermsFeed.com -->
+  <script type="text/javascript" src="//www.termsfeed.com/public/cookie-consent/4.2.0/cookie-consent.js" charset="UTF-8"></script>
+  <script type="text/javascript" charset="UTF-8">
+  document.addEventListener('DOMContentLoaded', function () {
+  cookieconsent.run({"notice_banner_type":"interstitial","consent_type":"implied","palette":"light","language":"en","page_load_consent_levels":["strictly-necessary","functionality","tracking","targeting"],"notice_banner_reject_button_hide":false,"preferences_center_close_button_hide":false,"page_refresh_confirmation_buttons":false,"website_name":"Loan Originator Networks","website_privacy_policy_url":"https://loanoriginator.net/privacy-policy"});
+  });
+  </script>
+
+  <noscript>Free cookie consent management tool by <a href="https://www.termsfeed.com/">TermsFeed</a></noscript>
+  <!-- End Cookie Consent by TermsFeed https://www.TermsFeed.com -->
+  
+
     {{ if ne .Site.Params.preloader false }}
     <!-- Preloader -->
     <div id="preloader">
@@ -15,6 +35,7 @@
 
     {{ block "main" . }}
     {{ end }}
+    
 
     <!-- Back To Top Button -->
     <div id="backtotop"><a href="#"></a></div>

@@ -7,7 +7,7 @@
   <div class="container">
     <div class="navbar-brand">
       {{- if $navbarLogo}}
-      <a class="navbar-item" href="{{ $navbarLogo.link }}">
+      <a id="navbar-logo" class="navbar-item" href="{{ $navbarLogo.link }}">
         <img src="{{ printf "images/%s" $navbarLogo.image | relURL }}" alt="" width="{{ $navbarLogoWidth }}" height="{{ $navbarLogoHeight }}">
       </a>
       {{- end}}

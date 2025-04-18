@@ -1,3 +1,6 @@
+{{ if .Params.hide_navbar }}
+{{ else }}
 {{ partial "navbar.html" . }}
 {{ partial "navbar-clone.html" . }}
+{{ end }}
 {{ partial "single/content.html" . }}
